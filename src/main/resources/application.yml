@@ -1,0 +1,27 @@
+# How to start spring-boot app without depending on Database?
+# https://stackoverflow.com/a/23875516/7203956
+spring:
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/contacts
+    username: postgres
+    password: vortex
+    continueOnError: false
+    initialize: false
+    tomcat:
+      testWhileIdle: true
+      validationQuery: SELECT 1
+
+  jpa:
+    show-sql: true
+    hibernate:
+      naming:
+        strategy: org.hibernate.cfg.DefaultNamingStrategy
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        hbm2ddl:
+          auto: update
+        temp:
+          use_jdbc_metadata_defaults: false
