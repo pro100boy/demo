@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class ContactServiceImpl implements ContactService{
@@ -24,8 +25,10 @@ public class ContactServiceImpl implements ContactService{
     private Pattern pattern;
 
     private List<Contact> doFilter(List<Contact> contacts, String reg) {
-        contacts.removeIf(s -> Pattern.compile(reg).matcher(s.getName()).matches());
-        return contacts;
+        //contacts.removeIf(s -> Pattern.compile(reg).matcher(s.getName()).matches());
+        return contacts.parallelStream()
+                .filter(s -> !Pattern.compile(reg).matcher(s.getName()).matches())
+                .collect(Collectors.toList());
     }
 
     @Override

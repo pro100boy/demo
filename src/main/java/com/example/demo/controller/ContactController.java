@@ -32,7 +32,7 @@ public class ContactController {
         return service.saveAll(list);
     }
 
-    @GetMapping(params = "nameFilter")
+    @GetMapping
     public List<Contact> getAll(@RequestParam(value = "nameFilter", defaultValue = "") String reg) {
         return service.getAll(reg);
     }
