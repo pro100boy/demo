@@ -1,5 +1,4 @@
-# How to start spring-boot app without depending on Database?
-# https://stackoverflow.com/a/23875516/7203956
+
 spring:
   datasource:
     driverClassName: org.postgresql.Driver

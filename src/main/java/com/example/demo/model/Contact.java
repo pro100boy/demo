@@ -9,7 +9,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.persistence.*;
 
 /**
- * Created by User on 19.07.2017.
+ * Created by Pavel Galushkin on 19.07.2017.
  */
 @Data
 @NoArgsConstructor
