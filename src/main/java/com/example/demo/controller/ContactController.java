@@ -32,8 +32,8 @@ public class ContactController {
         return service.saveAll(list);
     }
 
-    @GetMapping
-    public List<Contact> getAll(@RequestParam(value = "name", defaultValue = "World") String name) {
-        return service.getAll();
+    @GetMapping(params = "nameFilter")
+    public List<Contact> getAll(@RequestParam(value = "nameFilter", defaultValue = "") String reg) {
+        return service.getAll(reg);
     }
 }

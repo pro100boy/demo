@@ -5,7 +5,7 @@ import com.example.demo.model.Contact;
 import java.util.List;
 
 public interface ContactService {
-    List<Contact> getAll();
+    List<Contact> getAll(String reg);
 
     List<Contact> saveAll(Iterable<Contact> list);
 }

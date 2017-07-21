@@ -10,6 +10,8 @@ spring:
     tomcat:
       testWhileIdle: true
       validationQuery: SELECT 1
+    schema: classpath:/db/schema-postgres.sql
+    data:  classpath:/db/data-postgres.sql
 
   jpa:
     show-sql: true
@@ -24,3 +26,5 @@ spring:
           auto: update
         temp:
           use_jdbc_metadata_defaults: false
+server:
+  port: 8888
