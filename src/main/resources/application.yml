@@ -10,6 +10,18 @@ spring:
     tomcat:
       testWhileIdle: true
       validationQuery: SELECT 1
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 10
+      min-idle: 2
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 20000
+      max-idle: 5
+      initial-size: 5
+      # Validate the connection before borrowing it from the pool.
+      test-on-borrow: true
+      remove-abandoned: true
+      test-on-connect: true
+
     schema: classpath:/db/schema-postgres.sql
     data:  classpath:/db/data-postgres.sql
 
