@@ -40,3 +40,5 @@ spring:
           use_jdbc_metadata_defaults: false
 server:
   port: 8888
+  tomcat:
+    uri-encoding: utf-8

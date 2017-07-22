@@ -5,11 +5,15 @@ import com.example.demo.service.ContactService;
 import com.example.demo.to.ContactTo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -18,7 +22,7 @@ import java.util.List;
  * Created by User on 19.07.2017.
  */
 @RestController
-@RequestMapping(value = ContactController.REST_URL, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class ContactController {
     static final String REST_URL = "/hello";
 
@@ -31,21 +35,11 @@ public class ContactController {
     private String regexInit = "";
     private List<Contact> contacts;
 
-    // TODO проверять на отсутствие nameFilter, чтоб не регексить, а сразу возвращать весь список
-    // TODO переадресация с / на /?nameFilter=&page=1&cnt=100
-    // TODO использовать ResponseEntity с кодами ошибок (статусами)
-    @GetMapping
-    public List<Contact> getAll(@RequestParam(value = "nameFilter", defaultValue = "") String regex) {
-        List<Contact> contacts = service.getAll(regex);
-        Collections.sort(contacts, Comparator.comparingLong(o -> o.getId()));
-        return contacts;
-    }
-
-    @GetMapping("/pages")
+    @GetMapping(REST_URL)
     public ContactTo getPage(
-            @RequestParam(value = "nameFilter", defaultValue = "") String regex,
-            @RequestParam("page") int page,
-            @RequestParam(value = "cnt", required = false, defaultValue = "500_000") int pageSize) {
+            @RequestParam(value = "nameFilter", defaultValue = "^[В-Яв-я].*$") String regex,
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            @RequestParam(value = "cnt", required = false, defaultValue = "100") int pageSize) throws UnsupportedEncodingException {
 
         if (!regexInit.equals(regex)) {
             contacts = service.getAll(regex);
@@ -62,6 +56,7 @@ public class ContactController {
         return contacts;
     }
 
+    // TODO совместить с @GetMapping(REST_URL)
     /*
      * returns a view (not a new list) of the sourceList for the
      * range based on page and pageSize
