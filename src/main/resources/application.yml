@@ -6,7 +6,7 @@ spring:
     username: postgres
     password: vortex
     continueOnError: false
-    initialize: true
+    initialize: false
     tomcat:
       testWhileIdle: true
       validationQuery: SELECT 1
