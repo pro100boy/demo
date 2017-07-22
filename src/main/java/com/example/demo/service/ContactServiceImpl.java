@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -76,12 +75,14 @@ public class ContactServiceImpl implements ContactService {
         private int i;
         private int nThreads;
         private String regex;
+        private long size;
 
         public DBSelector(CountDownLatch latch, int i, int nThreads, String regex) {
             this.latch = latch;
             this.i = i;
             this.nThreads = nThreads;
             this.regex = regex;
+            size = repository.count() % nThreads == 0 ? repository.count() / nThreads : (repository.count() / nThreads) + 1;
         }
 
         @Override
@@ -99,7 +100,8 @@ public class ContactServiceImpl implements ContactService {
         }
 
         private Pageable createPageRequest() {
-            return new PageRequest(i, 100, Sort.Direction.ASC, "id");
+            // TODO определять автоматич. size
+            return new PageRequest(i, (int)size);
         }
     }
 
