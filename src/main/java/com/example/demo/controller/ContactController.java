@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Created by User on 19.07.2017.
@@ -22,17 +24,17 @@ public class ContactController {
     @Autowired
     private ContactService service;
 
-/*    @GetMapping(value = "/create")
-    public Collection<Contact> getCreated() {
-        Collection<Contact> list = Arrays.asList(
-                new Contact("Pasha"),
-                new Contact("Misha")
-        );
-        return service.saveAll(list);
-    }*/
-
     @GetMapping
-    public Collection<Contact> getAll(@RequestParam(value = "nameFilter", defaultValue = "") String reg) {
-        return service.getAll(reg);
+    public List<Contact> getAll(@RequestParam(value = "nameFilter", defaultValue = "") String regex) {
+        List<Contact> contacts = service.getAll(regex);
+        Collections.sort(contacts, Comparator.comparingLong(o -> o.getId()));
+        return contacts;
+    }
+
+    @GetMapping("/standard")
+    public List<Contact> getAllStandard(@RequestParam(value = "nameFilter", defaultValue = "") String regex) {
+        List<Contact> contacts = service.getAllStandard(regex);
+        Collections.sort(contacts, Comparator.comparingLong(o -> o.getId()));
+        return contacts;
     }
 }
