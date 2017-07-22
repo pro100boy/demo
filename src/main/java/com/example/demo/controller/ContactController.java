@@ -31,6 +31,9 @@ public class ContactController {
     private String regexInit = "";
     private List<Contact> contacts;
 
+    // TODO проверять на отсутствие nameFilter, чтоб не регексить, а сразу возвращать весь список
+    // TODO переадресация с / на /?nameFilter=&page=1&cnt=100
+    // TODO использовать ResponseEntity с кодами ошибок (статусами)
     @GetMapping
     public List<Contact> getAll(@RequestParam(value = "nameFilter", defaultValue = "") String regex) {
         List<Contact> contacts = service.getAll(regex);
