@@ -29,19 +29,9 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public List<Contact> getAll(@NonNull String regex) {
         log.info(regex.isEmpty() ? "getAll" : "getAll with regex: " + regex);
-        // TODO repository.findAll(): реализовать вытягивание частями. Каждую часть в своем потоке фильтровать. Отфильтрованное вливать в ConcurrentLinkedQueue или сразу писать в Response
         getDataParallel(regex);
         log.info(String.format("Returned %d objects", commonContactList.size()));
         return commonContactList;
-    }
-
-    @Override
-    public List<Contact> getAllStandard(@NonNull String regex) {
-        log.info(regex.isEmpty() ? "getAllStandard" : "getAllStandard with regex: " + regex);
-        // TODO repository.findAll(): реализовать вытягивание частями. Каждую часть в своем потоке фильтровать. Отфильтрованное вливать в ConcurrentLinkedQueue или сразу писать в Response
-        List<Contact> contacts = filterService.doFilter(repository.findAll(), regex);
-        log.info(String.format("Returned %d standard objects", contacts.size()));
-        return contacts;
     }
 
     @Override

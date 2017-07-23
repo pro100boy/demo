@@ -12,6 +12,6 @@ import java.util.List;
 public class ContactTo {
     private List<Contact> contacts;
     private long totalCount;
-    private Integer currentPage;
-    private Integer totalPages;
+    private int currentPage;
+    private int totalPages;
 }

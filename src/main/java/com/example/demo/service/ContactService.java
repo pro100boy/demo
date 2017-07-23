@@ -9,6 +9,4 @@ public interface ContactService {
     List<Contact> getAll(@NonNull String reg);
 
     List<Contact> saveAll(Iterable<Contact> list);
-
-    List<Contact> getAllStandard(@NonNull String regex);
 }
