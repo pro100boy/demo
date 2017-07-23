@@ -2,9 +2,9 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Contact;
 import com.example.demo.service.ContactService;
-import com.example.demo.to.ContactTo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,13 +30,13 @@ public class ContactController {
 
     // TODO использовать ResponseEntity с кодами ошибок (статусами)
     @GetMapping(REST_URL)
-    public ContactTo getContacts(
+    public ResponseEntity getContacts(
             @RequestParam(value = "nameFilter", defaultValue = "^[В-Яв-яC-Zc-z].*$") String regex,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "cnt", required = false, defaultValue = "100") int pageSize) {
 
         if (pageSize <= 0 || page <= 0) {
-            throw new IllegalArgumentException("invalid page size: " + pageSize);
+            throw new IllegalArgumentException();
         }
 
         // To avoid to reselect list from DB
@@ -44,6 +44,7 @@ public class ContactController {
             contacts = service.getAll(regex);
             regexInit = regex;
         }
-        return getPage(contacts, page, pageSize);
+        return ResponseEntity
+                .ok(getPage(contacts, page, pageSize));
     }
 }
