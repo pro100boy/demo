@@ -26,10 +26,4 @@ public class Contact {
     @Column(name = "name", nullable = false)
     @Length(min = 3, max = 255, message = "*Name must have at least 3 characters")
     private String name;
-
-    public Contact(String name)
-    {
-        this.id = null;
-        this.name = name;
-    }
 }
