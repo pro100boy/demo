@@ -30,6 +30,8 @@ public class ContactServiceImpl implements ContactService {
     @Setter
     private Pattern pattern;
 
+    private static final int nThreads = 5;//Runtime.getRuntime().availableProcessors();
+
     @Override
     public List<Contact> getAll(@NonNull String regex) {
         log.info(regex.isEmpty() ? "getAll" : "getAll with regex: " + regex);
@@ -45,7 +47,6 @@ public class ContactServiceImpl implements ContactService {
     }
 
     private void getDataParallel(String regex) {
-        int nThreads = 5;//Runtime.getRuntime().availableProcessors();
         ExecutorService executor = Executors.newFixedThreadPool(nThreads);
         CountDownLatch latch = new CountDownLatch(nThreads);
         setPattern(Pattern.compile(regex));
