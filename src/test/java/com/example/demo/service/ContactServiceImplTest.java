@@ -1,7 +1,13 @@
 package com.example.demo.service;
 
+import com.example.demo.model.Contact;
+import com.example.demo.to.ContactTo;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 public class ContactServiceImplTest extends AbstractServiceTest{
 
@@ -10,8 +16,13 @@ public class ContactServiceImplTest extends AbstractServiceTest{
 
     @Test
     public void testGetAll() throws Exception {
-        /*List<RestaurantTo> restaurantsTo = service.getAll();
-        Assert.assertEquals(restaurantsTo.size(), 3);*/
+        List<Contact> contacts = service.getAll("^[Б-Яб-яA-Za-z].*$");
+        Assert.assertEquals(contacts.size(), 23);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testGetNull() {
+        service.getAll(null);
     }
 
 }
