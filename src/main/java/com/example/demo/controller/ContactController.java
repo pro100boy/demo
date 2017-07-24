@@ -2,9 +2,9 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Contact;
 import com.example.demo.service.ContactService;
+import com.example.demo.to.ContactTo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,9 +28,8 @@ public class ContactController {
     private String regexInit = "";
     private List<Contact> contacts;
 
-    // TODO использовать ResponseEntity с кодами ошибок (статусами)
     @GetMapping(REST_URL)
-    public ResponseEntity getContacts(
+    public ContactTo getContacts(
             @RequestParam(value = "nameFilter", defaultValue = "^[В-Яв-яC-Zc-z].*$") String regex,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "cnt", required = false, defaultValue = "100") int pageSize) {
@@ -44,7 +43,7 @@ public class ContactController {
             contacts = service.getAll(regex);
             regexInit = regex;
         }
-        return ResponseEntity
-                .ok(getPage(contacts, page, pageSize));
+
+        return getPage(contacts, page, pageSize);
     }
 }

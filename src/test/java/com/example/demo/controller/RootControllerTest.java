@@ -1,17 +1,21 @@
 package com.example.demo.controller;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static com.example.demo.controller.ContactController.REST_URL;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class RootControllerTest {
-    @Before
-    public void setUp() throws Exception {
-    }
+public class RootControllerTest extends AbstractControllerTest {
 
     @Test
-    public void root() throws Exception {
+    public void testRedirect() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(redirectedUrl(REST_URL + "/?nameFilter=&page=&cnt="))
+                .andExpect(status().is3xxRedirection())
+                .andDo(print());
     }
 
 }

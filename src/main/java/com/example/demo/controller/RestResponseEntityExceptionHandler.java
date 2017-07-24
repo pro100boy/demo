@@ -24,7 +24,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     @ExceptionHandler(value = {MethodArgumentTypeMismatchException.class, IllegalArgumentException.class})
     protected ResponseEntity<Object> handleArgumentException(RuntimeException ex, WebRequest request) {
-        String bodyOfResponse = "Invalid page size or invalid page value";
+        String bodyOfResponse = "Invalid page size or invalid page number";
         return handleExceptionInternal(ex, bodyOfResponse,
                 new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
