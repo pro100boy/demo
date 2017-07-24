@@ -1,39 +1,55 @@
 package com.example.demo.controller;
 
-import com.example.demo.service.ContactService;
-import com.example.demo.to.ContactTo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 
-import static com.example.demo.ContactTestData.REGEX;
+import static com.example.demo.ContactTestData.*;
+import static com.example.demo.controller.ContactController.REST_URL;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isIn;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ContactControllerTest {
+public class ContactControllerTest extends AbstractControllerTest {
 
-    @Mock
-    ContactService service;
-
-    @InjectMocks
-    ContactController sut;
-
-    private JacksonTester<ContactTo> json;
-
-    @Before
-    public void setup() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JacksonTester.initFields(this, objectMapper);
+    @Test
+    public void testGetPage() throws Exception {
+        mockMvc.perform(get(REST_URL)
+                .param("nameFilter", REGEX) // should be 22 objects
+                .param("page", "1")
+                .param("cnt", "100"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
     @Test
-    public void testGet() throws Exception {
-        ContactTo contactTo = sut.getContacts(REGEX, 1, 100);
-        Assert.assertEquals(contactTo.getContacts().size(), 0);
+    public void testBadRequest() throws Exception {
+        mockMvc.perform(get(REST_URL)
+                .param("nameFilter", REGEX)
+                .param("page", "-1")
+                .param("cnt", "100"))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    public void testContent() throws Exception {
+
+        MvcResult result = mockMvc.perform(get(REST_URL)
+                .param("nameFilter", REGEXLOWERCASE) // should be 2 objects
+                .param("page", "1")
+                .param("cnt", "20"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        assertThat(result.getResponse().getContentAsString(), isIn(CONTENT));
     }
 }
+

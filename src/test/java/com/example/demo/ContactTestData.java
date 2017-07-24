@@ -9,7 +9,10 @@ public class ContactTestData {
     public static final String REGEX = "^[Б-Яб-яA-Za-z].*$";
     public static final String REGEXLOWERCASE = "^[А-Я].*$";
 
-    public static final String CONTENT = "{\"contacts\":[{\"id\":101,\"name\":\"утинцева Дарья\"},{\"id\":301,\"name\":\"аримов Казимир\"},{\"id\":201,\"name\":\"яримов Казимир\"}],\"totalCount\":3,\"currentPage\":1,\"totalPages\":1}";
+    public static final List<String> CONTENT = Lists.newArrayList(
+            "{\"contacts\":[{\"id\":101,\"name\":\"утинцева Дарья\"},{\"id\":301,\"name\":\"аримов Казимир\"}],\"totalCount\":2,\"currentPage\":1,\"totalPages\":1}",
+            "{\"contacts\":[{\"id\":301,\"name\":\"аримов Казимир\"},{\"id\":101,\"name\":\"утинцева Дарья\"}],\"totalCount\":2,\"currentPage\":1,\"totalPages\":1}"
+    );
 
     public static final List<Long> EXPECTEDLISTIDS = Lists.newArrayList(
             25L, 26L, 41L, 59L,
