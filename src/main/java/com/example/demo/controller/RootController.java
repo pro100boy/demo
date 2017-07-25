@@ -8,6 +8,6 @@ public class RootController {
 
     @GetMapping
     public String root(){
-        return String.format("redirect:%s/?nameFilter=&page=&cnt=", "/hello");
+        return String.format("redirect:%s/?nameFilter=", "/hello");
     }
 }

@@ -18,20 +18,16 @@ public class ContactControllerTest extends AbstractControllerTest {
     @Test
     public void testGetPage() throws Exception {
         mockMvc.perform(get(REST_URL)
-                .param("nameFilter", REGEX) // should be 22 objects
-                .param("page", "1")
-                .param("cnt", "100"))
+                .param("nameFilter", REGEX))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testBadRequest() throws Exception {
         mockMvc.perform(get(REST_URL)
-                .param("nameFilter", REGEX)
-                .param("page", "-1")
-                .param("cnt", "100"))
+                .param("nameFilter", null))
                 .andExpect(status().isBadRequest())
                 .andDo(print())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
@@ -41,9 +37,7 @@ public class ContactControllerTest extends AbstractControllerTest {
     public void testContent() throws Exception {
 
         MvcResult result = mockMvc.perform(get(REST_URL)
-                .param("nameFilter", REGEXLOWERCASE) // should be 2 objects
-                .param("page", "1")
-                .param("cnt", "20"))
+                .param("nameFilter", REGEXLOWERCASE)) // should be 2 objects
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))

@@ -13,7 +13,7 @@ public class RootControllerTest extends AbstractControllerTest {
     @Test
     public void testRedirect() throws Exception {
         mockMvc.perform(get("/"))
-                .andExpect(redirectedUrl(REST_URL + "/?nameFilter=&page=&cnt="))
+                .andExpect(redirectedUrl(REST_URL + "/?nameFilter="))
                 .andExpect(status().is3xxRedirection())
                 .andDo(print());
     }

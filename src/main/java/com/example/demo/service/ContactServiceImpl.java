@@ -2,77 +2,119 @@ package com.example.demo.service;
 
 import com.example.demo.model.Contact;
 import com.example.demo.repository.ContactRepository;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
+@Scope("prototype")
 public class ContactServiceImpl implements ContactService {
     private final Logger log = LoggerFactory.getLogger(getClass());
-    private CopyOnWriteArrayList<Contact> commonContactList = new CopyOnWriteArrayList<>();
 
     @Autowired
     private ContactRepository repository;
 
-    @Setter
     private Pattern pattern;
 
-    private static final int nThreads = 5;//Runtime.getRuntime().availableProcessors();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JsonFactory factory = new JsonFactory();
+    @Getter // getter and non-final for tests only
+    private AtomicLong aLong = new AtomicLong(0);
+
+    // Queue for writing filtered rows (some threads) and reading (one thread)
+    private final BlockingQueue<Contact> queue = new LinkedBlockingQueue<>();
+
+    private final int nThreads = 5;//Runtime.getRuntime().availableProcessors();
+
 
     @Override
-    public List<Contact> getAll(@NonNull String regex) {
-        log.info(regex.isEmpty() ? "getAll" : "getAll with regex: " + regex);
-        getDataParallel(regex);
-        log.info(String.format("Selecting and sorting are completed. Returned %d objects", commonContactList.size()));
-        return commonContactList;
-    }
+    public void createResponse(@NonNull String regex, @NonNull HttpServletResponse response) throws IOException {
+        aLong.set(0);
+        this.pattern = Pattern.compile(regex);
 
-    @Override
-    public List<Contact> saveAll(Iterable<Contact> list) {
-        log.info("saveAll");
-        return repository.save(list);
-    }
+        log.info("Start writing records filtered by regex: " + regex);
 
-    private void getDataParallel(String regex) {
-        ExecutorService executor = Executors.newFixedThreadPool(nThreads);
-        CountDownLatch latch = new CountDownLatch(nThreads);
-        setPattern(Pattern.compile(regex));
-        long recTotal = repository.count();
-        long partSize = recTotal % nThreads == 0 ? recTotal / nThreads : recTotal / nThreads + 1;
-        commonContactList.clear();
+        try (PrintWriter responseWriter = response.getWriter();
+             JsonGenerator generator = factory.createGenerator(responseWriter);
+        ) {
+            generator.setCodec(objectMapper);
 
-        for (int i = 0; i < nThreads; i++) {
-            executor.submit(new DBSelector(latch, i, nThreads, partSize));
+            // generate and write json data to response
+            generator.writeStartObject();
+            generator.writeFieldName("contacts");
+            generator.writeStartArray();
+            getDataParallel(generator);
+            generator.flush();
+            generator.writeEndArray();
+            generator.writeEndObject();
         }
 
+        log.info(String.format("Selecting and sorting are completed. Returned %d objects", aLong.get()));
+    }
+
+    /**
+     * generate threads (some producers and one consumer)
+     * @param generator
+     */
+    private void getDataParallel(JsonGenerator generator) {
+
+        ExecutorService executor = Executors.newFixedThreadPool(nThreads + 1);
+        CountDownLatch latchProducers = new CountDownLatch(nThreads);
+        CountDownLatch latchConsumer = new CountDownLatch(1);
+
+        // total rows into DB
+        long recTotal = repository.count();
+
+        // number of rows for each SELECT
+        long partSize = recTotal % nThreads == 0 ? recTotal / nThreads : recTotal / nThreads + 1;
+
+        // run multi thread selecting
+        for (int i = 0; i < nThreads; i++) {
+            executor.submit(new Producer(latchProducers, i, nThreads, partSize));
+        }
+        executor.submit(new Consumer(generator, latchConsumer));
+
         try {
-            latch.await();  // wait until latch counted down to 0
+            // wait until all producers are finishing
+            latchProducers.await();
+
+            // put object-marker to queue
+            queue.put(new Contact(-1L, "}}"));
+            // wait until consumer are finishing
+            latchConsumer.await();
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
-    class DBSelector implements Runnable {
-        private CountDownLatch latch;
+    /**
+     * class for SELECT and filter portion of data
+     */
+    class Producer implements Runnable {
+        private final CountDownLatch latch;
         private int i;
         private int nThreads;
         private long partSize;
 
-        public DBSelector(CountDownLatch latch, int i, int nThreads, long partSize) {
+        public Producer(CountDownLatch latch, int i, int nThreads, long partSize) {
             this.latch = latch;
             this.i = i;
             this.nThreads = nThreads;
@@ -84,19 +126,63 @@ public class ContactServiceImpl implements ContactService {
             // select portion of the data
             log.info(String.format("Start selecting portion %d of %d", i + 1, nThreads));
             try {
-                Pageable pageable = new PageRequest(i, (int)partSize);
+                Pageable pageable = new PageRequest(i, (int) partSize);
+                // select portion of data
                 List<Contact> contactPageList = repository.findAll(pageable).getContent();
-                commonContactList.addAll(doFilter(contactPageList));
+                // processing
+                doFilter(contactPageList);
             } finally {
                 latch.countDown();
                 log.info(String.format("Finished selecting and sorting portion %d of %d", i + 1, nThreads));
             }
         }
 
-        private List<Contact> doFilter(List<Contact> contacts) {
-            return contacts.parallelStream()
+        /**
+         * verify each object from list for pattern matching<br/>
+         * write filtered object to shared BlockingQueue<Contact>
+         * @param contactPageList
+         */
+        private void doFilter(List<Contact> contactPageList) {
+            contactPageList.stream()
                     .filter(s -> !pattern.matcher(s.getName()).matches())
-                    .collect(Collectors.toList());
+                    .forEach(contact -> {
+                        try {
+                            queue.put(contact);
+                            aLong.incrementAndGet();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    });
+        }
+    }
+
+    /**
+     * Read object from shared BlockingQueue<Contact> <br/>
+     * and write it to response by JsonGenerator
+     */
+    class Consumer implements Runnable {
+        private final JsonGenerator jsonGenerator;
+        private final CountDownLatch latchConsumer;
+
+        public Consumer(JsonGenerator jsonGenerator, CountDownLatch latchConsumer) {
+            this.jsonGenerator = jsonGenerator;
+            this.latchConsumer = latchConsumer;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Contact contact;
+                //consuming contacts until exit message is received
+                while ((contact = queue.take()).getName() != "}}") {
+                    jsonGenerator.writeObject(contact);
+                }
+            } catch (InterruptedException | IOException e) {
+                e.printStackTrace();
+            }
+            finally {
+                latchConsumer.countDown();
+            }
         }
     }
 }
