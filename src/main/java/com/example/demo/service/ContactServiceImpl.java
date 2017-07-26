@@ -41,7 +41,7 @@ public class ContactServiceImpl implements ContactService {
     // Queue for writing filtered rows (some threads) and reading (one thread)
     private final BlockingQueue<Contact> queue = new LinkedBlockingQueue<>();
 
-    private final int nThreads = 5;//Runtime.getRuntime().availableProcessors();
+    private static final int nThreads = 5;//Runtime.getRuntime().availableProcessors();
 
 
     @Override
@@ -52,7 +52,7 @@ public class ContactServiceImpl implements ContactService {
         log.info("Start writing records filtered by regex: " + regex);
 
         try (PrintWriter responseWriter = response.getWriter();
-             JsonGenerator generator = factory.createGenerator(responseWriter);
+             JsonGenerator generator = factory.createGenerator(responseWriter)
         ) {
             generator.setCodec(objectMapper);
 
