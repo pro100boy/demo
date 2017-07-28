@@ -110,9 +110,9 @@ public class ContactServiceImpl implements ContactService {
      */
     class Producer implements Runnable {
         private final CountDownLatch latch;
-        private int i;
-        private int nThreads;
-        private long partSize;
+        private final int i;
+        private final int nThreads;
+        private final long partSize;
 
         public Producer(CountDownLatch latch, int i, int nThreads, long partSize) {
             this.latch = latch;
