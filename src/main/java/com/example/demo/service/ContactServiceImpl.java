@@ -102,6 +102,8 @@ public class ContactServiceImpl implements ContactService {
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        } finally {
+            executor.shutdown();
         }
     }
 
