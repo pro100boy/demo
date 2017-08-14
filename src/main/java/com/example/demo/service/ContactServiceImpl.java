@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.model.Contact;
 import com.example.demo.repository.ContactRepository;
+import com.example.demo.utils.ContactToJsonStringConverter;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,10 +12,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -33,6 +37,9 @@ public class ContactServiceImpl implements ContactService {
 
     private Pattern pattern;
 
+    private final GenericConversionService conversionService = new GenericConversionService();
+    private final Converter<Contact, String> converter = new ContactToJsonStringConverter();
+
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final JsonFactory factory = new JsonFactory();
     @Getter // getter and non-final for tests only
@@ -43,10 +50,17 @@ public class ContactServiceImpl implements ContactService {
 
     private static final int nThreads = 5;//Runtime.getRuntime().availableProcessors();
 
+    @PostConstruct
+    private void registerConverter()
+    {
+        conversionService.addConverter(converter);
+    }
 
     @Override
     public void createResponse(@NonNull String regex, @NonNull HttpServletResponse response) throws IOException {
         aLong.set(0);
+
+        // may throw java.util.regex.PatternSyntaxException. Handle by RestResponseEntityExceptionHandler
         this.pattern = Pattern.compile(regex);
 
         log.info("Start writing records filtered by regex: " + regex);
@@ -71,6 +85,7 @@ public class ContactServiceImpl implements ContactService {
 
     /**
      * generate threads (some producers and one consumer)
+     *
      * @param generator
      */
     private void getDataParallel(JsonGenerator generator) {
@@ -142,6 +157,7 @@ public class ContactServiceImpl implements ContactService {
         /**
          * verify each object from list for pattern matching<br/>
          * write filtered object to shared BlockingQueue<Contact>
+         *
          * @param contactPageList
          */
         private void doFilter(List<Contact> contactPageList) {
@@ -181,8 +197,7 @@ public class ContactServiceImpl implements ContactService {
                 }
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
-            }
-            finally {
+            } finally {
                 latchConsumer.countDown();
             }
         }

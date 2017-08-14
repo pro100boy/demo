@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
 import com.example.demo.service.ContactService;
+import com.example.demo.utils.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,12 +22,15 @@ public class ContactController {
     private ContactService service;
 
     @GetMapping(REST_URL)
-    public void getContacts(@RequestParam(value = "nameFilter", defaultValue = "^[В-Яв-яC-Zc-z].*$") String regex,
-                            HttpServletResponse response) throws IOException {
+    public void getContacts(@RequestParam(value = "nameFilter") String regex,
+                                      HttpServletResponse response) throws IOException {
 
-        response.setCharacterEncoding("UTF8");
-        response.setContentType("application/json");
+        if (StringUtils.hasLength(regex)) {
+            response.setCharacterEncoding("UTF8");
+            response.setContentType("application/json");
 
-        service.createResponse(regex, response);
+            service.createResponse(regex, response);
+        } else
+            throw new NotFoundException("There are no data returned");
     }
 }
