@@ -14,7 +14,7 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 import javax.annotation.PostConstruct;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @Sql(scripts = {"classpath:db/schema-postgres.sql", "classpath:db/data-postgres.sql"}, config = @SqlConfig(encoding = "UTF-8"))
 public abstract class AbstractControllerTest {
 

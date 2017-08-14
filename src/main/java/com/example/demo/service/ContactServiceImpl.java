@@ -66,12 +66,8 @@ public class ContactServiceImpl implements ContactService {
         log.info("Start writing records filtered by regex: " + regex);
 
         try (PrintWriter responseWriter = response.getWriter();
-             JsonGenerator generator = factory.createGenerator(responseWriter)
         ) {
-            generator.setCodec(objectMapper);
-
-            // generate and write json data to response
-            generator.writeStartObject();
+            responseWriter.println();
             generator.writeFieldName("contacts");
             generator.writeStartArray();
             getDataParallel(generator);
@@ -131,7 +127,7 @@ public class ContactServiceImpl implements ContactService {
         private final int nThreads;
         private final long partSize;
 
-        public Producer(CountDownLatch latch, int i, int nThreads, long partSize) {
+        Producer(CountDownLatch latch, int i, int nThreads, long partSize) {
             this.latch = latch;
             this.i = i;
             this.nThreads = nThreads;
