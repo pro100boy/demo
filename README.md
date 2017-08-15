@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/pro100boy/demo.svg?branch=master)](https://travis-ci.org/pro100boy/demo)
+[![Build Status](https://travis-ci.org/pro100boy/demo.svg?branch=WebSocket)](https://travis-ci.org/pro100boy/demo)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/482f33da3efb42aab948aee96a7e7aa2)](https://www.codacy.com/app/gpg/demo?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pro100boy/demo&amp;utm_campaign=Badge_Grade)
 ## REST Service (application deployed in application context `hello`) ##
 Для работы приложения необходимо:
