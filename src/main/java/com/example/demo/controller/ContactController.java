@@ -31,6 +31,7 @@ public class ContactController {
 
             service.createResponse(regex, response);
         } else
+            // handling in RestResponseEntityExceptionHandler class
             throw new NotFoundException("There are no data returned");
     }
 }

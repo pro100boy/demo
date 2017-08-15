@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class RootController {
 
+    // simply redirect
     @GetMapping
     public String root(){
         return String.format("redirect:%s/?nameFilter=", "/hello");

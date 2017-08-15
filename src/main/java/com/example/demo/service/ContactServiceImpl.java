@@ -22,11 +22,10 @@ public class ContactServiceImpl implements ContactService {
     private ContactRepository repository;
 
     /**
-     * Write contacts filtered by name using regular expression for filter.
-     * Method writes all contacts which names DOES NOT MATCH with this regex.
+     * Method writes all contacts which names DOES NOT MATCH with regex
      *
      * @param regex regular expression for filter.
-     * @param response
+     * @param response response to write in
      */
     @Override
     public void createResponse(@NonNull String regex, @NonNull HttpServletResponse response) throws IOException {

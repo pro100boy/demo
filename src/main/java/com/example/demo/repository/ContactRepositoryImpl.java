@@ -36,12 +36,25 @@ public class ContactRepositoryImpl implements ContactRepository {
     private final GenericConversionService conversionService = new GenericConversionService();
     private final Converter<ResultSet, String> converter = new ResultSetToJsonStringConverter();
 
+    // Setting fetch size to turn cursors on
+    private static final int FETCH_SIZE = 5_000;
+
     @PostConstruct
     private void registerConverter() {
         conversionService.addConverter(converter);
     }
 
+    // Implementing Cursor based ResultSets
     // https://jdbc.postgresql.org/documentation/head/query.html#fetchsize-example
+
+    /**
+     *
+     * @param regex regular expression for filtering
+     * @param responseWriter response to write json in
+     * @return Long value, count of filtered records
+     * @throws JsonProcessingException
+     * @throws PatternSyntaxException
+     */
     public Long printAll(String regex, PrintWriter responseWriter) throws JsonProcessingException, PatternSyntaxException {
         boolean isFirst = true;
         long aLong = 0;
@@ -55,7 +68,7 @@ public class ContactRepositoryImpl implements ContactRepository {
             conn.setAutoCommit(false);
             stmt = conn.createStatement(TYPE_FORWARD_ONLY, CONCUR_READ_ONLY);
             // Turn use of the cursor on.
-            stmt.setFetchSize(5_000);
+            stmt.setFetchSize(FETCH_SIZE);
             rs = stmt.executeQuery(QUERY_STR);
             while (rs.next()) {
                 if (!pattern.matcher(rs.getString(2)).matches()) {
