@@ -17,5 +17,4 @@ public class RootControllerTest extends AbstractControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andDo(print());
     }
-
 }

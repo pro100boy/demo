@@ -18,7 +18,7 @@ import java.util.regex.PatternSyntaxException;
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = {IllegalStateException.class, ServletException.class})
+    @ExceptionHandler(value = {IllegalStateException.class, ServletException.class, IllegalArgumentException.class})
     protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
         String bodyOfResponse = "Please provide a value '?nameFilter='";
         return handleExceptionInternal(ex, bodyOfResponse,
@@ -46,11 +46,19 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
                 new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 
-    @ExceptionHandler(value = {PatternSyntaxException.class, NullPointerException.class})
+    @ExceptionHandler(PatternSyntaxException.class)
     protected ResponseEntity<Object> patternSyntaxException(RuntimeException ex, WebRequest request) {
         String bodyOfResponse = "Wrong regular expression";
         return handleExceptionInternal(ex, bodyOfResponse,
                 new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    protected ResponseEntity<Object> nullPointerException(RuntimeException ex, WebRequest request) {
+        String bodyOfResponse = "Oops.. Something wrong";
+        return handleExceptionInternal(ex, bodyOfResponse,
+                new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
 
     }
 }

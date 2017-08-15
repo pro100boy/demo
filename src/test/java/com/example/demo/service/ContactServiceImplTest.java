@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.regex.PatternSyntaxException;
 
 import static com.example.demo.ContactTestData.REGEX;
 import static com.example.demo.ContactTestData.REGEXLOWERCASE;
@@ -18,19 +19,23 @@ public class ContactServiceImplTest extends AbstractServiceTest{
 
     @Test(expected = NullPointerException.class)
     public void testGetNull() throws Exception{
-        service.createResponse(null, null);
+        service.createResponse("", null);
     }
 
     @Test
-    public void testCreateResponse() throws Exception
+    public void testResponse() throws Exception
     {
         HttpServletResponse response = new MockHttpServletResponse();
         service.createResponse(REGEX, response);
         assertThat(response.getStatus(), is(200));
-        //assertThat(service.getALong().get(), is(22L));
 
         service.createResponse(REGEXLOWERCASE, response);
         assertThat(response.getStatus(), is(200));
-       // assertThat(service.getALong().get(), is(2L));
+    }
+
+    @Test(expected = PatternSyntaxException.class)
+    public void testWrongRegexp() throws Exception{
+        HttpServletResponse response = new MockHttpServletResponse();
+        service.createResponse("?", response);
     }
 }

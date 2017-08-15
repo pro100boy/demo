@@ -24,13 +24,20 @@ public class ContactControllerTest extends AbstractControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
+    @Test
+    public void testEmptyResults() throws Exception {
+        mockMvc.perform(get(REST_URL)
+                .param("nameFilter", ""))
+                .andExpect(status().isNotFound())
+                .andDo(print())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testBadRequest() throws Exception {
         mockMvc.perform(get(REST_URL)
                 .param("nameFilter", null))
-                .andExpect(status().isBadRequest())
-                .andDo(print())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+                .andDo(print());
     }
 
     @Test
