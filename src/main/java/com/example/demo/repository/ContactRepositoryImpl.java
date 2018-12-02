@@ -48,28 +48,24 @@ public class ContactRepositoryImpl implements ContactRepository {
     // https://jdbc.postgresql.org/documentation/head/query.html#fetchsize-example
 
     /**
-     *
-     * @param regex regular expression for filtering
+     * @param regex          regular expression for filtering
      * @param responseWriter response to write json in
      * @return Long value, count of filtered records
-     * @throws JsonProcessingException
      * @throws PatternSyntaxException
      */
-    public Long printAll(String regex, PrintWriter responseWriter) throws JsonProcessingException, PatternSyntaxException {
+    public Long printAll(String regex, PrintWriter responseWriter) throws PatternSyntaxException {
         boolean isFirst = true;
         long aLong = 0;
         Pattern pattern = Pattern.compile(regex);
-        Connection conn = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-        try {
-            conn = dataSource.getConnection();
+        try (Connection conn = dataSource.getConnection();
+             Statement stmt = conn.createStatement(TYPE_FORWARD_ONLY, CONCUR_READ_ONLY);
+             ResultSet rs = stmt.executeQuery(QUERY_STR)) {
+
             // make sure autocommit is off
             conn.setAutoCommit(false);
-            stmt = conn.createStatement(TYPE_FORWARD_ONLY, CONCUR_READ_ONLY);
             // Turn use of the cursor on.
             stmt.setFetchSize(FETCH_SIZE);
-            rs = stmt.executeQuery(QUERY_STR);
+
             while (rs.next()) {
                 if (!pattern.matcher(rs.getString(2)).matches()) {
                     if (isFirst) {
@@ -82,20 +78,6 @@ public class ContactRepositoryImpl implements ContactRepository {
             }
         } catch (SQLException e) {
             log.error(e.getLocalizedMessage());
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                log.error(e.getLocalizedMessage());
-            }
         }
         return aLong;
     }
